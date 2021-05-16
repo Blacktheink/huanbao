@@ -4,6 +4,7 @@
             <input v-if="type !== 'textarea'"
                    class="qy-input_input__inner"
                    :type="type"
+                   v-model="inputValue"
                    ref="input"
                    :placeholder="placeholder"
                    @input="handleInput"
@@ -80,7 +81,7 @@
                 if (!input) return;
                 console.warn(input.value ,_this.inputValue,'*********setValue')
                 if (input.value === _this.inputValue) return;
-                // input.value = _this.inputValue;
+                input.value = _this.inputValue;
             },
             clearValue() {
                 const _this = this;
@@ -119,9 +120,10 @@
 
         .qy-input_input{
             position: relative;
-            width: fit-content;
+            /*width: fit-content;*/
             height: fit-content;
             .qy-input_input__inner{
+                width: 100%;
                 font-size: inherit;
                 height: 40px;
                 line-height: 40px;

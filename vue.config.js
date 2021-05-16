@@ -6,6 +6,7 @@ module.exports = {
     assetsDir: "static",
     //开发跨域
     devServer: {
+        // disableHostCheck:true,
         clientLogLevel: `none`,
         host: "0.0.0.0",
         port: 8090,

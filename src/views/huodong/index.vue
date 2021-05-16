@@ -8,7 +8,7 @@
 </template>
 
 <script>
-    import {http_async} from "@/tool/http";
+    import {http, http_async} from "@/tool/http";
     import {news} from "@/tool/mnData";
 
     export default {
@@ -35,7 +35,7 @@
             }
         },
         beforeMount() {
-            this.list = news
+            // this.list = news
             this.getData();
         },
         methods: {
@@ -44,8 +44,8 @@
              */
             getData() {
                 const _this = this;
-                http_async({
-                    methods: 'post',
+                http({
+                    method: 'post',
                     url: `/activities/activities/list`
                 }).then(res => {
                     if (res.code === 0) {

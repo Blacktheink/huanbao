@@ -24,7 +24,7 @@
 
 <script>
     import {news} from "@/tool/mnData";
-    import {http_async} from "@/tool/http";
+    import {http, http_async} from "@/tool/http";
 
     export default {
         name: "activity",
@@ -37,8 +37,8 @@
             }
         },
         beforeMount() {
-            this.list = news
-            // this.getData();
+            // this.list = news
+            this.getData();
         },
         methods: {
             /**
@@ -47,7 +47,7 @@
             getData() {
                 const _this = this;
                 http_async({
-                    methods: 'post',
+                    method: 'post',
                     url: `/regulations/regulations/list`
                 }).then(res => {
                     if (res.code === 0) {

@@ -1,7 +1,7 @@
 import axios from 'axios'
 // import {Loading, Message, Alert, Notification, MessageBox} from 'element-ui';
 // import router from '../router';
-
+import {tips} from "@/components";
 axios.defaults.withCredentials = true;//让ajax携带cookie
 axios.defaults.timeout = 0;
 axios.defaults.baseURL = process.env.NODE_ENV === 'development' ? process.env.VUE_APP_URL : process.env.VUE_APP_BASE_URL;
@@ -20,18 +20,28 @@ export const http = (options) => {
             },
         })
     }
+    let loader = tips({  type: 'loading',
+        message: "正在加载中，请稍后",})
     return new Promise((resolve, reject) => {
         axios(options)
             .then(res => {
                 res = res.data;
                 setTimeout(() => {
-                    // loadingType.close();
+                    loader.close();
+
                     resolve(res);
+                    if(res.code !== 0){
+                        let error = tips({  type: 'error',
+                            message: "未知错误："+(res.msg || '')+"请刷新重试",})
+                        setTimeout(()=>{
+                            error.close()
+                        },3000)
+                    }
                 }, 1000);
             })
             .catch(error => {
                 setTimeout(() => {
-                    // loadingType.close();
+                    loader.close();
                     // Notification.error({
                     //     title: '提示',
                     //     message: '网络错误: ' + error.message || '请求错误',

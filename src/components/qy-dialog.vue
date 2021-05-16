@@ -77,12 +77,15 @@
                 }, 300)
             },
             confirm(){
-                this.$emit('confirm');
-                this.closeDialog();
+                this.$emit('confirm',()=>{
+                    this.closeDialog();
+                });
+                // this.closeDialog();
+                // this.$emit('confirm');
             },
             cancel(){
-                this.$emit('cancel');
                 this.closeDialog();
+                this.$emit('cancel');
             },
 
 

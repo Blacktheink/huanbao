@@ -19,28 +19,43 @@
                      title="返回顶部"
                 />
             </div>
-            <div class="index_imgBox" @click="openDialog">
-                <img class="index_float_img" src="../assets/activity.png" alt="活动申报" title="活动申报"/>
+            <div class="index_imgBox" @click="openDialog('feedback')">
+                <img class="index_float_img" src="../assets/activity.png" alt="反馈" title="反馈"/>
+            </div>
+            <div class="index_imgBox" @click="openDialog('activity')">
+                <img class="index_float_img" src="../assets/article.png" alt="活动申报" title="活动申报"/>
             </div>
 
         </div>
         <foot_init></foot_init>
-        <qy-dialog :show.sync="show" title="反馈信息" @confirm="confirmHook">
+        <qy-dialog :show.sync="show" :title="dialog[activeDialog]['label']"   @confirm="confirmHook">
             <div class="dialog_body">
-                <div class="dialog_body_item row">
-                    <div class="dialog_body_item_label">反馈主题</div>
-                    <qy-input v-model="information.title" placeholder="请填写"></qy-input>
+                <div class="dialog_body_item row border-b">
+                    <div class="dialog_body_item_label">{{dialog[activeDialog]['title_label']}}</div>
+                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['title']" placeholder="请填写" />
+<!--                    <qy-input class="dialog_body_item_input" v-model="dialog[activeDialog]['title']" placeholder="请填写"></qy-input>-->
                 </div>
                 <div class="dialog_body_item">
-                    <div class="dialog_body_item_label row mb-5">反馈详情</div>
-                    <qy-input v-model="information.content" type="textarea" placeholder="请填写"></qy-input>
+                    <div class="dialog_body_item_label row mb-5">{{dialog[activeDialog]['content_label']}}</div>
+                    <qy-input v-model="dialog[activeDialog]['content']" type="textarea" placeholder="请填写"></qy-input>
+                </div>
+                <div class="dialog_body_item row border-b">
+                    <div class="dialog_body_item_label">{{dialog[activeDialog]['phone_label']}}</div>
+                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['phone']" placeholder="请填写" />
+<!--                    <qy-input class="dialog_body_item_input" v-model="dialog[activeDialog]['phone']" placeholder="请填写"></qy-input>-->
+                </div>
+                <div class="dialog_body_item row">
+                    <div class="dialog_body_item_label __error">{{error_msg}}</div>
                 </div>
             </div>
         </qy-dialog>
+
     </div>
 </template>
 
 <script>
+    import {tips} from "@/components";
+    import {http_async} from "@/tool/http";
     export default {
         name: "index",
         components: {
@@ -49,6 +64,7 @@
             head_init: r => require.ensure([], () => r(require('@/components/head_init')), 'index_init'),
             QyDialog: r => require.ensure([], () => r(require('@/components/qy-dialog')), 'dialog_init'),
             QyInput: r => require.ensure([], () => r(require('@/components/qy-input')), 'dialog_init'),
+
         },
         data() {
             return {
@@ -57,6 +73,28 @@
                 timer: null,
                 //
                 show: false,
+                activeDialog:'feedback',
+                error_msg:'sss',
+                dialog:{
+                    feedback:{
+                        label:'反馈信息',
+                        title_label:'反馈主题',
+                        content_label:'反馈详情',
+                        phone_label:'联系方式',
+                        title:'',
+                        content:'',
+                        phone:'',
+                    },
+                    activity:{
+                        label:'活动申报',
+                        title_label:'活动主题',
+                        content_label:'活动详情',
+                        phone_label:'联系方式',
+                        title:'',
+                        content:'',
+                        phone:'',
+                    },
+                },
                 information:{
                     title:'',
                     content:''
@@ -103,14 +141,103 @@
             /**
              * 打开活动申报
              */
-            openDialog() {
+            openDialog(e) {
                 const _this = this;
+                _this.activeDialog = e || 'feedback';
+                _this.dialog[e]['title']= ""
+                _this.dialog[e]['content']= ""
+                _this.dialog[e]['phone']= ""
+                _this.error_msg= ""
                 _this.show = true;
-            },
-            confirmHook(){
-                console.warn(this.information)
-            }
 
+                let a = tips({  type: 'loading',
+                    message: "正在加载中，请稍后",})
+                // setTimeout(()=>{
+                //     a.close()
+                // },3000)
+
+            },
+
+           async confirmHook( done){
+                const _this = this;
+
+                if(!_this.dialog[ _this.activeDialog]['phone']){
+                    _this.error_msg= "请填写联系方式"
+                    return
+                }
+                // if(_this.dialog[ _this.activeDialog]['phone'].length!==11 &&_this.dialog[ _this.activeDialog]['phone'].length!==10){
+                //     _this.error_msg= "联系方式不正确，请重新填写"
+                //     return
+                // }
+                if(!/^[1-9]{1}[0-9]{9,10}$/g.test(_this.dialog[ _this.activeDialog]['phone'])){
+                    _this.error_msg= "联系方式不正确，请重新填写"
+                    return
+                }
+                _this.error_msg= "";
+                if(_this.activeDialog==='feedback'){
+                    await  _this.submitFeedback();
+                }
+                if(_this.activeDialog==='activity'){
+                  await  _this.submitActivity();
+                }
+
+                console.warn(this.dialog)
+
+                done()
+            }
+        },
+        //新增反馈
+        submitFeedback(){
+            const _this = this;
+            return new Promise((resolve, reject) => {
+                http_async({
+                    method: 'post',
+                    url: `/feedback/feedback/add`
+                }).then(res => {
+                    if (res.code === 0) {
+                        _this.list = res.rows;
+                        window.sessionStorage.setItem('flfg',JSON.stringify(res.rows))
+                        _this.total = res.total;
+                    }
+                    let success = tips({
+                        type: 'success',
+                        message: "反馈成功",
+                    })
+                    setTimeout(()=>{
+                        resolve()
+                        success.close();
+                    },1000)
+                }).catch(err=>{
+                    reject(err)
+                })
+            })
+
+        },
+        //新增活动
+        submitActivity(){
+            const _this = this;
+            return new  Promise((resolve, reject) => {
+                http_async({
+                    method: 'post',
+                    url: `/invitation/invitation/add`
+                }).then(res => {
+                    if (res.code === 0) {
+                        _this.list = res.rows;
+                        window.sessionStorage.setItem('flfg',JSON.stringify(res.rows))
+                        _this.total = res.total;
+                    }
+                    let success = tips({
+                        type: 'success',
+                        message: "申报成功",
+                    })
+                    setTimeout(()=>{
+                        resolve()
+                        success.close();
+                    },1000)
+                }).catch(err=>{
+                    reject(err)
+                })
+            })
 
         },
     }
@@ -223,15 +350,21 @@
         }
 
         .dialog_body{
+            width: 40vw;
             padding: 0 10px;
             box-sizing: border-box;
             .dialog_body_item{
+                padding-bottom: 10px;
                 /*display: flex;*/
                 /*flex-wrap: wrap;*/
                 /*align-items: center;*/
                 margin-bottom: 15px;
                 .dialog_body_item_label{
                     margin-right: 15px;
+                    flex-shrink: 0;
+                }
+                .dialog_body_item_input{
+                    flex: 1;
                 }
             }
         }
@@ -246,5 +379,11 @@
     }
     .mb-5{
         margin-bottom: 5px;
+    }
+    .__error{
+        color: brown;
+    }
+    .border-b{
+        border-bottom: 2px solid #2c3e50;
     }
 </style>
