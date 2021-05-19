@@ -4,8 +4,11 @@
             <div class="t_huodong_item" :key="i" @click="openDetails(v,i)">
                 <div class="t_huodong_item_title">{{v['title']}}</div>
                 <div class="t_huodong_item_body">
-                    <div class="t_huodong_item_content">{{v['info']}}</div>
-                    <div class="t_huodong_item_foot">{{v['updateTime']}}</div>
+                    <div class="t_huodong_item_content">活动对象：{{v['objects'] | showObject}}</div>
+                    <div class="t_huodong_item_foot">活动人数：{{v['restrictionsNum'] }} 人</div>
+                    <div class="t_huodong_item_foot">主办部门：{{v['hostDept'] | showDept }}</div>
+                    <div class="t_huodong_item_foot">活动承办人：{{v['promoter'] }}</div>
+                    <div class="t_huodong_item_foot">承办人电话：{{v['phone'] }}</div>
                 </div>
             </div>
         </template>
@@ -17,6 +20,34 @@
 
     export default {
         name: "theme-huodong",
+        filters: {
+            showObject(a) {
+                switch (a.toString()) {
+                    case "0":
+                        return "中小学生"
+                    case "1":
+                        return "高中生"
+                    case "2":
+                        return "大学生"
+                    case "3":
+                        return "全体人员"
+                    default:
+                        return "其他"
+                }
+            },
+            showDept(a) {
+                switch (a.toString()) {
+                    case "0":
+                        return "个人"
+                    case "1":
+                        return "企业"
+                    case "2":
+                        return "政府部门"
+                    default:
+                        return "其他"
+                }
+            }
+        },
         props: {
             list: {
                 type: Array,
@@ -29,8 +60,8 @@
              * @param v
              * @param i
              */
-            openDetails(v,i){
-                this.$emit('openDetails', {item:v,index:i})
+            openDetails(v, i) {
+                this.$emit('openDetails', {item: v, index: i})
             },
         },
     }
@@ -103,13 +134,15 @@
         /*box-shadow: 2px 2px 4px rgba(0,0,0,.6);*/
         box-shadow: 0 10px 40px -10px rgba(0, 64, 128, .2);
     }
-    .t_huodong_item_foot{
+
+    .t_huodong_item_foot {
         line-height: 20px;
         padding: 10px;
         box-sizing: border-box;
         border-top: 2px dashed $t-huodong-borderColor;
     }
-    .t_huodong_item_content{
+
+    .t_huodong_item_content {
         line-height: 30px;
         word-break: break-all;
         padding: 10px;

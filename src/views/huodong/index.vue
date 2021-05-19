@@ -51,7 +51,7 @@
                     if (res.code === 0) {
                         _this.list = res.rows;
                         _this.total = res.total;
-                        window.sessionStorage.setItem('qwhd',JSON.stringify(res.rows))
+                        window.localStorage.setItem('qwhd',JSON.stringify(res.rows))
                     }
                 })
             },

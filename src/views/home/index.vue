@@ -2,11 +2,11 @@
     <div>
         <title_template class="mb-10" title="新 闻 资 讯" subTitle="NEWS AND INFORMATION"></title_template>
         <news class="mb-10"></news>
-        <div class="home_more mb-20" @click="openMore('xwzx')">更多内容</div>
+        <div class="home_more mb-40" @click="openMore('xwzx')">更多内容</div>
         <title_template class="mb-10" title="法 律 法 规" subTitle="LAWS AND REGULATIONS"></title_template>
-        <laws class="mb-20"></laws>
+        <laws class="mb-40"></laws>
         <title_template class="mb-10" title="趣 味 活 动" subTitle="FUN ACTIVITIES"></title_template>
-        <activity class="mb-20"></activity>
+        <activity class="mb-40"></activity>
         <title_template class="mb-10" title="第 三 方" subTitle="THIRD PARTY"></title_template>
         <third-party></third-party>
     </div>
@@ -46,6 +46,10 @@
 
     .mb-20 {
         margin-bottom: 20px !important;
+    }
+
+    .mb-40 {
+        margin-bottom: 40px !important;
     }
 
     .home_more {

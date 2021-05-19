@@ -8,7 +8,10 @@
                         <template v-for="(v,i) in list.slice(0,5)">
                             <div class="activity_item mb-10" :key="i" @click="openDetails(i)">
                                 <div class="activity_item_title ">{{v['title']}}</div>
-                                <div class="activity_item_info">{{v['info']}}</div>
+                                <div class="dashed"></div>
+                                <div class="activity_item_info">活动对象：{{v['objects'] | showObject}}</div>
+                                <div class="activity_item_info">活动人数：{{v['restrictionsNum'] }} 人</div>
+                                <div class="activity_item_info">主办部门：{{v['hostDept'] | showDept }}</div>
                             </div>
                         </template>
                     </div>
@@ -31,6 +34,34 @@
         components: {
             Error_svg: r => require.ensure([], () => r(require("@/components/error_svg")), 'news_init'),
         },
+        filters: {
+            showObject(a) {
+                switch (a.toString()) {
+                    case "0":
+                        return "中小学生"
+                    case "1":
+                        return "高中生"
+                    case "2":
+                        return "大学生"
+                    case "3":
+                        return "全体人员"
+                    default:
+                        return "其他"
+                }
+            },
+            showDept(a) {
+                switch (a.toString()) {
+                    case "0":
+                        return "个人"
+                    case "1":
+                        return "企业"
+                    case "2":
+                        return "政府部门"
+                    default:
+                        return "其他"
+                }
+            }
+        },
         data() {
             return {
                 list: [],
@@ -48,11 +79,12 @@
                 const _this = this;
                 http_async({
                     method: 'post',
-                    url: `/regulations/regulations/list`
+                    url: `/activities/activities/list`
                 }).then(res => {
                     if (res.code === 0) {
-                        _this.list = res.rows;
-                        window.sessionStorage.setItem('qwhd', JSON.stringify(res.rows))
+                        let list  = JSON.parse(JSON.stringify(res.rows))
+                        _this.list = list.splice(0,5);
+                        window.localStorage.setItem('qwhd', JSON.stringify(res.rows))
                     }
                 })
             },
@@ -170,13 +202,18 @@
         text-overflow: ellipsis;
         padding:  0 0 10px 0;
         box-sizing: border-box;
+        font-weight: bolder;
+    }
+    .dashed{
+        width: 100%;
+        height: 1px;
+        border-top: 1px dashed $borderColor;
     }
     .activity_item_info{
         padding:  10px 0 0 0 ;
         box-sizing: border-box;
         font-size: 18px;
         line-height: 20px;
-        border-top: 1px dashed $borderColor;
     }
     .activity_btn {
         padding: 10px 15px;

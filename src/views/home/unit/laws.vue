@@ -10,7 +10,7 @@
                     <template v-for="(v,i) in list.slice(0,5)">
                         <div class="laws_item mb-10" :key="i" @click="openDetails(i)">
                             <div class="laws_item_title ">{{v['title']}}</div>
-                            <div class="laws_item_info">{{v['info']}}</div>
+                            <div class="laws_item_info">{{v['type'] | showType}}</div>
                         </div>
                     </template>
                 </div>
@@ -32,6 +32,24 @@
         components: {
             Error_svg: r => require.ensure([], () => r(require("@/components/error_svg")), 'news_init'),
         },
+        filters: {
+            showType(a) {
+                switch (a.toString()) {
+                    case "1":
+                        return "国家法律法规"
+                    case "2":
+                        return "地方法律法规"
+                    case "3":
+                        return "司法解释"
+                    case "4":
+                        return "中外条约"
+                    case "5":
+                        return "政策参考"
+                    default:
+                        return "其他"
+                }
+            }
+        },
         data() {
             return {
                 list: [],
@@ -52,8 +70,9 @@
                     url: `/regulations/regulations/list`
                 }).then(res => {
                     if (res.code === 0) {
-                        _this.list = res.rows;
-                        window.sessionStorage.setItem('flfg', JSON.stringify(res.rows))
+                        let list  = JSON.parse(JSON.stringify(res.rows))
+                        _this.list = list.splice(0,5);
+                        window.localStorage.setItem('flfg', JSON.stringify(res.rows))
                     }
                 })
             },
@@ -102,7 +121,7 @@
     .laws_body {
         width: 100%;
         min-height: 200px;
-        max-height: 500px;
+        max-height: 550px;
         overflow: hidden;
         display: flex;
         justify-content: center;
@@ -151,17 +170,18 @@
             box-shadow: 3px 3px 5px 0 rgba(0,0,0,.15), inset 3px 5px 0 0 #fff;
         }
         .laws_item_title{
-            font-size: 20px;
-            line-height: 24px;
+            line-height: 28px;
             text-align: left;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
+            font-weight: bolder;
+            font-size: 24px;
         }
         .laws_item_info{
-            font-size: 18px;
-            line-height: 20px;
+            font-size: 20px;
+            line-height: 24px;
             text-align: left;
             white-space: nowrap;
             overflow: hidden;

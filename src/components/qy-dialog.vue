@@ -77,11 +77,11 @@
                 }, 300)
             },
             confirm(){
-                this.$emit('confirm',()=>{
+                this.$emit('confirmHook',()=>{
                     this.closeDialog();
                 });
+                // this.$emit('confirmHook');
                 // this.closeDialog();
-                // this.$emit('confirm');
             },
             cancel(){
                 this.closeDialog();

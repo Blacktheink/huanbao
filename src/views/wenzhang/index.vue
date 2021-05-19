@@ -25,7 +25,7 @@
         },
         beforeMount() {
             // this.news = news
-            // window.sessionStorage.setItem('xwzx', JSON.stringify(news))
+            // window.localStorage.setItem('xwzx', JSON.stringify(news))
             this.getData();
         },
         methods: {
@@ -39,9 +39,9 @@
                     url: `/invitation/invitation/list`
                 }).then(res => {
                     if (res.code === 0) {
-                        _this.news = res.rows;
+                        _this.news = res.rows.filter(i=>i['audit']===0);
                         _this.total = res.total;
-                        window.sessionStorage.setItem('xwzx', JSON.stringify(res.rows))
+                        window.localStorage.setItem('xwzx', JSON.stringify(_this.news))
                     }
                 })
             },

@@ -51,7 +51,7 @@
                 }).then(res => {
                     if (res.code === 0) {
                         _this.list = res.rows;
-                        window.sessionStorage.setItem('flfg',JSON.stringify(res.rows))
+                        window.localStorage.setItem('flfg',JSON.stringify(res.rows))
                         _this.total = res.total;
                     }
                 })

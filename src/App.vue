@@ -6,10 +6,10 @@
 <script>
     export default {
         beforeCreate(){
-            window.sessionStorage.clear();
+            // window.localStorage.clear();
         },
         beforeDestroy(){
-            window.sessionStorage.clear();
+            // window.localStorage.clear();
         },
     }
 </script>

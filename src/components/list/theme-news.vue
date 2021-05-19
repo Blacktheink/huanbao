@@ -2,7 +2,7 @@
     <div class="t_news_init">
         <div class="t_news_init_left">
             <template v-for="(v,i) in list.slice(0,Math.ceil(list.length / 2))">
-                <div class="t_news_item" :key="i">
+                <div class="t_news_item" v-if="v['audit']===0" :key="i">
                     <div class="t_news_item_time" @click="openDetails(v,i)">{{v['updateTime']}}</div>
                     <div class="t_news_item_body" @click="openDetails(v,i)">
                         <div class="t_news_item_title">{{v['title']}}</div>
@@ -13,7 +13,7 @@
         </div>
         <div class="t_news_init_right">
             <template v-for="(v,i) in list.slice(Math.ceil(list.length / 2))">
-                <div class="t_news_item" :key="i">
+                <div class="t_news_item" v-if="v['audit']===0" :key="i">
                     <div class="t_news_item_time __right" @click="openDetails(v,Math.ceil(list.length / 2) + i)">{{v['updateTime']}}</div>
                     <div class="t_news_item_body" @click="openDetails(v,Math.ceil(list.length / 2) + i)">
                         <div class="t_news_item_title">{{v['title']}}</div>

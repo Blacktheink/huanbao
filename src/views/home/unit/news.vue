@@ -3,7 +3,7 @@
         <div v-if="list.length>0" class="news_body">
             <div class="__left">
                 <template v-for="(v,i) in list.slice(0,Math.ceil(list.length / 2))">
-                    <div class="news_item mb-10" :key="i">
+                    <div class="news_item mb-10" v-if="v['audit']===0" :key="i">
                         <div class="news_item_body mb-10" @click="openDetails(i)">
                             <div class="news_item_title">{{v['title']}}</div>
                             <div class="news_item_content">{{v['info']}}</div>
@@ -15,7 +15,7 @@
             <div class="split"></div>
             <div class="__right">
                 <template v-for="(v,i) in list.slice(Math.ceil(list.length / 2))">
-                    <div class="news_item mb-10" :key="i">
+                    <div class="news_item mb-10" v-if="v['audit']===0" :key="i">
                         <div class="news_item_body mb-10" @click="openDetails(Math.ceil(list.length / 2) + i)">
                             <div class="news_item_title">{{v['title']}}</div>
                             <div class="news_item_content">{{v['info']}}</div>
@@ -60,8 +60,9 @@
                     url: `/invitation/invitation/list`
                 }).then(res => {
                     if (res.code === 0) {
-                        _this.list = res.rows;
-                        window.sessionStorage.setItem('xwzx', JSON.stringify(res.rows))
+                        let list  = JSON.parse(JSON.stringify(res.rows)).filter(i=>i['audit']===0)
+                        _this.list = list.splice(0,6);
+                        window.localStorage.setItem('xwzx', JSON.stringify(list))
                     }
                 })
             },
@@ -142,9 +143,11 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 24px;
+            line-height: 28px;
             padding: 10px;
             box-sizing: border-box;
+            font-weight: bolder;
+            font-size: 24px;
         }
 
         .news_item_content {

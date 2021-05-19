@@ -5,11 +5,11 @@
             </div>
             <div class="loader_title">{{message}}</div>
         </div>
-        <div class="tips_box" v-else-if="type==='error'">
+        <div class="tips_box __open" v-else-if="type==='error'">
             <img class="tips_img" :src="require('../assets/notiy_error.png')" alt=""/>
             <div class="tips_title">{{message}}</div>
         </div>
-        <div class="tips_box" v-else-if="type==='success'">
+        <div class="tips_box __open" v-else-if="type==='success'">
             <img class="tips_img" :src="require('../assets/notiy_success.png')" alt=""/>
             <div class="tips_title">{{message}}</div>
         </div>
@@ -142,5 +142,21 @@
         align-items: center;
         justify-content: center;
         flex-wrap: wrap;
+    }
+    .__open {
+        animation: scale-in-br .3s cubic-bezier(0.175, 0.885, 0.320, 1.275);
+    }
+
+    @keyframes scale-in-br {
+        0% {
+            transform: scale(0);
+            transform-origin: 100% 100%;
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            transform-origin: 100% 100%;
+            opacity: 1;
+        }
     }
 </style>

@@ -2,7 +2,7 @@
     <div class="index_init" ref="index" @scroll="watchScroll">
         <head_init ref="head" :pageNumber="$route.meta.id || 0" :isSlide="isSlide"></head_init>
         <div class="index_banner">
-            <qy-banner ></qy-banner>
+            <qy-banner></qy-banner>
         </div>
         <div class="index_body">
             <div class="index_body_init">
@@ -28,21 +28,26 @@
 
         </div>
         <foot_init></foot_init>
-        <qy-dialog :show.sync="show" :title="dialog[activeDialog]['label']"   @confirm="confirmHook">
+        <qy-dialog :show.sync="show" :title="dialog[activeDialog]['label']" @confirmHook="confirmHook">
             <div class="dialog_body">
-                <div class="dialog_body_item row border-b">
+                <div class="dialog_body_item row border-b" v-if="activeDialog==='feedback'">
                     <div class="dialog_body_item_label">{{dialog[activeDialog]['title_label']}}</div>
-                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['title']" placeholder="请填写" />
-<!--                    <qy-input class="dialog_body_item_input" v-model="dialog[activeDialog]['title']" placeholder="请填写"></qy-input>-->
+                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['title']" placeholder="请填写"/>
                 </div>
-                <div class="dialog_body_item">
+                <div class="dialog_body_item row border-b" v-else>
+                    <div class="dialog_body_item_label">{{dialog[activeDialog]['title_label']}}</div>
+                    <select ref="select" class="select_init" :selectedIndex="selectedIndex" @change="changeSelect">
+<!--                        <option disabled selected>-&#45;&#45;请选择-&#45;&#45;</option>-->
+                        <option v-for="(o,i) in options" :key="i"   :value="o['title']">{{o['title']}}</option>
+                    </select>
+                </div>
+                <div class="dialog_body_item" v-if="activeDialog!=='activity'">
                     <div class="dialog_body_item_label row mb-5">{{dialog[activeDialog]['content_label']}}</div>
-                    <qy-input v-model="dialog[activeDialog]['content']" type="textarea" placeholder="请填写"></qy-input>
+                    <textarea class="textarea_init" v-model="dialog[activeDialog]['content']" placeholder="请填写"></textarea>
                 </div>
                 <div class="dialog_body_item row border-b">
                     <div class="dialog_body_item_label">{{dialog[activeDialog]['phone_label']}}</div>
-                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['phone']" placeholder="请填写" />
-<!--                    <qy-input class="dialog_body_item_input" v-model="dialog[activeDialog]['phone']" placeholder="请填写"></qy-input>-->
+                    <input class="dialog_body_item_input" v-model="dialog[activeDialog]['phone']" placeholder="请填写"/>
                 </div>
                 <div class="dialog_body_item row">
                     <div class="dialog_body_item_label __error">{{error_msg}}</div>
@@ -55,7 +60,8 @@
 
 <script>
     import {tips} from "@/components";
-    import {http_async} from "@/tool/http";
+    import {http, http_async} from "@/tool/http";
+
     export default {
         name: "index",
         components: {
@@ -63,41 +69,41 @@
             foot_init: r => require.ensure([], () => r(require('@/components/foot_init')), 'index_init'),
             head_init: r => require.ensure([], () => r(require('@/components/head_init')), 'index_init'),
             QyDialog: r => require.ensure([], () => r(require('@/components/qy-dialog')), 'dialog_init'),
-            QyInput: r => require.ensure([], () => r(require('@/components/qy-input')), 'dialog_init'),
-
         },
         data() {
             return {
+                selectedIndex:0,
+                options:[],
                 //是否滚动 （0：没有；1：滚动）
                 isSlide: 0,
                 timer: null,
                 //
                 show: false,
-                activeDialog:'feedback',
-                error_msg:'sss',
-                dialog:{
-                    feedback:{
-                        label:'反馈信息',
-                        title_label:'反馈主题',
-                        content_label:'反馈详情',
-                        phone_label:'联系方式',
-                        title:'',
-                        content:'',
-                        phone:'',
+                activeDialog: 'feedback',
+                error_msg: 'sss',
+                dialog: {
+                    feedback: {
+                        label: '反馈信息',
+                        title_label: '反馈主题',
+                        content_label: '反馈详情',
+                        phone_label: '联系方式',
+                        title: '',
+                        content: '',
+                        phone: '',
                     },
-                    activity:{
-                        label:'活动申报',
-                        title_label:'活动主题',
-                        content_label:'活动详情',
-                        phone_label:'联系方式',
-                        title:'',
-                        content:'',
-                        phone:'',
+                    activity: {
+                        label: '活动申报',
+                        title_label: '活动主题',
+                        content_label: '活动详情',
+                        phone_label: '联系方式',
+                        title: '',
+                        content: '',
+                        phone: '',
                     },
                 },
-                information:{
-                    title:'',
-                    content:''
+                information: {
+                    title: '',
+                    content: ''
                 },
             };
         },
@@ -144,97 +150,203 @@
             openDialog(e) {
                 const _this = this;
                 _this.activeDialog = e || 'feedback';
-                _this.dialog[e]['title']= ""
-                _this.dialog[e]['content']= ""
-                _this.dialog[e]['phone']= ""
-                _this.error_msg= ""
+                _this.error_msg = ""
+                _this.dialog[e]['phone'] = ""
+                if(e==='feedback'){
+                    _this.dialog[e]['title'] = ""
+                    _this.dialog[e]['content'] = ""
+                }
+                if(e==='activity'){
+                    _this.options =   JSON.parse((window.localStorage.getItem('qwhd')))
+                    _this.selectedIndex = 0;
+                }
                 _this.show = true;
-
-                let a = tips({  type: 'loading',
-                    message: "正在加载中，请稍后",})
-                // setTimeout(()=>{
-                //     a.close()
-                // },3000)
-
             },
-
-           async confirmHook( done){
+            changeSelect(e){
                 const _this = this;
-
-                if(!_this.dialog[ _this.activeDialog]['phone']){
-                    _this.error_msg= "请填写联系方式"
+                _this.selectedIndex = e.target.selectedIndex
+            },
+             async confirmHook(done) {
+                const _this = this;
+                if (!_this.dialog[_this.activeDialog]['phone']) {
+                    _this.error_msg = "请填写联系方式"
                     return
                 }
                 // if(_this.dialog[ _this.activeDialog]['phone'].length!==11 &&_this.dialog[ _this.activeDialog]['phone'].length!==10){
                 //     _this.error_msg= "联系方式不正确，请重新填写"
                 //     return
                 // }
-                if(!/^[1-9]{1}[0-9]{9,10}$/g.test(_this.dialog[ _this.activeDialog]['phone'])){
-                    _this.error_msg= "联系方式不正确，请重新填写"
+                if (!/^[1-9]{1}[0-9]{9,10}$/g.test(_this.dialog[_this.activeDialog]['phone'])) {
+                    _this.error_msg = "联系方式不正确，请重新填写"
                     return
                 }
-                _this.error_msg= "";
-                if(_this.activeDialog==='feedback'){
-                    await  _this.submitFeedback();
-                }
-                if(_this.activeDialog==='activity'){
-                  await  _this.submitActivity();
-                }
+                _this.error_msg = "";
 
-                console.warn(this.dialog)
+                  if (_this.activeDialog === 'feedback') {
+                      let dataList = new FormData();
+                      dataList.append('note', _this.dialog.feedback.title);
+                      dataList.append('opinion', _this.dialog.feedback.content);
+                      dataList.append('contact', _this.dialog.feedback.phone);
+                      http({
+                          method: 'post',
+                          url: `/feedback/feedback/add`,
+                          data: dataList,
+                      }).then(res => {
+                          if (res.code === 0) {
+                              let success = tips({
+                                  type: 'success',
+                                  message: "反馈成功",
+                              })
+                              setTimeout(() => {
+                                  done()
+                                  success.close();
+                              }, 1000)
+                          }else{
+                              let success = tips({
+                                  type: 'error',
+                                  message: "反馈失败，请重试",
+                              })
+                              setTimeout(() => {
+                                  done()
+                                  success.close();
+                              }, 1000)
+                          }
+                      }).catch(err => {
+                          let success = tips({
+                              type: 'error',
+                              message: "反馈失败，请重试",
+                          })
+                          setTimeout(() => {
+                              done()
+                              success.close();
+                          }, 1000)
+                      })
 
-                done()
+
+
+
+
+                }
+                if (_this.activeDialog === 'activity') {
+                    let dataList = new FormData();
+                    dataList.append('id', _this.options[_this.selectedIndex]['id']);
+                    dataList.append('title', _this.options[_this.selectedIndex]['title']);
+                    dataList.append('phone', _this.dialog.activity.phone);
+                    http({
+                        method: 'post',
+                        url: `/apply/apply/add`,
+                        data: dataList,
+                    }).then(res => {
+                        if (res.code === 0) {
+                            let success = tips({
+                                type: 'success',
+                                message: "申报成功",
+                            })
+                            setTimeout(() => {
+                                done()
+                                success.close();
+                            }, 1000)
+                        }else{
+                            let success = tips({
+                                type: 'error',
+                                message: "申报失败，请重试",
+                            })
+                            setTimeout(() => {
+                                done()
+                                success.close();
+                            }, 1000)
+                        }
+                    }).catch(err => {
+                        let success = tips({
+                            type: 'error',
+                            message: "申报失败，请重试",
+                        })
+                        setTimeout(() => {
+                            done()
+                            success.close();
+                        }, 1000)
+                    })
+                }
+                 // done()
+
+                // done()
             }
         },
         //新增反馈
-        submitFeedback(){
-            const _this = this;
+        setFeedBack() {
             return new Promise((resolve, reject) => {
-                http_async({
+                const _this = this;
+                let dataList = new FormData();
+                dataList.append('note', _this.dialog.feedback.title);
+                dataList.append('opinion', _this.dialog.feedback.content);
+                dataList.append('contact', _this.dialog.feedback.phone);
+                console.warn(this.dialog)
+
+                http({
                     method: 'post',
-                    url: `/feedback/feedback/add`
+                    url: `/feedback/feedback/add`,
+                    data: dataList,
                 }).then(res => {
                     if (res.code === 0) {
                         _this.list = res.rows;
-                        window.sessionStorage.setItem('flfg',JSON.stringify(res.rows))
+                        window.localStorage.setItem('flfg', JSON.stringify(res.rows))
                         _this.total = res.total;
+
+                        let success = tips({
+                            type: 'success',
+                            message: "反馈成功",
+                        })
+                        setTimeout(() => {
+                            resolve()
+                            success.close();
+                        }, 1000)
+                    }else{
+                        let success = tips({
+                            type: 'error',
+                            message: "反馈失败，请重试",
+                        })
+                        setTimeout(() => {
+                            resolve()
+                            success.close();
+                        }, 1000)
                     }
+
+                }).catch(err => {
+                    reject(err)
                     let success = tips({
-                        type: 'success',
-                        message: "反馈成功",
+                        type: 'error',
+                        message: "反馈失败，请重试",
                     })
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         resolve()
                         success.close();
-                    },1000)
-                }).catch(err=>{
-                    reject(err)
+                    }, 1000)
                 })
             })
 
         },
         //新增活动
-        submitActivity(){
+        submitActivity() {
             const _this = this;
-            return new  Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {
                 http_async({
                     method: 'post',
                     url: `/invitation/invitation/add`
                 }).then(res => {
                     if (res.code === 0) {
                         _this.list = res.rows;
-                        window.sessionStorage.setItem('flfg',JSON.stringify(res.rows))
+                        window.localStorage.setItem('flfg', JSON.stringify(res.rows))
                         _this.total = res.total;
                     }
                     let success = tips({
                         type: 'success',
                         message: "申报成功",
                     })
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         resolve()
                         success.close();
-                    },1000)
-                }).catch(err=>{
+                    }, 1000)
+                }).catch(err => {
                     reject(err)
                 })
             })
@@ -245,6 +357,7 @@
 
 <style scoped lang="scss">
     @import "src/assets/theme-color";
+
     .index_init {
         height: 100%;
         width: 100%;
@@ -268,7 +381,7 @@
             flex-shrink: 0;
             box-sizing: border-box;
             padding: 24px 50px;
-            background-color:$body-bgColor;
+            background-color: $body-bgColor;
 
             .index_body_init {
                 height: 100%;
@@ -349,21 +462,24 @@
             }
         }
 
-        .dialog_body{
+        .dialog_body {
             width: 40vw;
             padding: 0 10px;
             box-sizing: border-box;
-            .dialog_body_item{
+
+            .dialog_body_item {
                 padding-bottom: 10px;
                 /*display: flex;*/
                 /*flex-wrap: wrap;*/
                 /*align-items: center;*/
                 margin-bottom: 15px;
-                .dialog_body_item_label{
+
+                .dialog_body_item_label {
                     margin-right: 15px;
                     flex-shrink: 0;
                 }
-                .dialog_body_item_input{
+
+                .dialog_body_item_input {
                     flex: 1;
                 }
             }
@@ -372,18 +488,39 @@
 
     }
 
-    .row{
+    .row {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
     }
-    .mb-5{
+
+    .mb-5 {
         margin-bottom: 5px;
     }
-    .__error{
+
+    .__error {
         color: brown;
     }
-    .border-b{
+
+    .border-b {
         border-bottom: 2px solid #2c3e50;
+    }
+    .textarea_init{
+        resize: none;
+        width: 100% !important;
+        line-height: 40px;
+        color: $textColor;
+        box-sizing: border-box;
+        border-radius: 5px;
+        padding: 0 15px;
+        border: 1px solid $borderColor;
+        &:focus,&:active{
+            border-color: $focus-borderColor;
+        }
+    }
+    .select_init{
+        width: 50%;
+        height: 40px;
+        line-height: 40px;
     }
 </style>

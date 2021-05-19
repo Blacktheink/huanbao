@@ -1,15 +1,43 @@
 <template>
     <div class="details_init">
         <crumbs :nav="nav" class="details_crumbs" position="left"></crumbs>
-        <div class="details_body" v-if="content" >
+        <div class="details_body" v-if="content&&type==='xwzx'" >
             <div class="details_title">{{content['title']}}</div>
             <div class="details_status">
                 <div class="details_status_item __time">{{content['updateTime']}}</div>
                 <div class="details_status_item">{{content['note']}}</div>
-                <div class="details_status_item">{{nav[1]['label']}}</div>
+                <div class="details_status_item">{{content['type']==1?'科普知识':'新闻资讯'}}</div>
             </div>
             <div class="details_content" v-html="content['content']"></div>
         </div>
+
+        <div class="details_body" v-else-if="content&&type==='flfg'" >
+            <div class="details_title">{{content['title']}}</div>
+            <div class="details_status row jc-sb">
+                <div class="details_status_item __time">【发布单位】 {{content['releaseUnit']}}</div>
+                <div class="details_status_item">【发布文号】 {{content['documentNumber']}}</div>
+                <div class="details_status_item">【发布日期】 {{content['releaseDate']}}</div>
+            </div>
+            <div class="details_status row jc-sb">
+                <div class="details_status_item __time">【生效日期】 {{content['effectiveDate']}}</div>
+                <div class="details_status_item">【失效日期】 {{content['expiryDate']}}</div>
+                <div class="details_status_item">【所属类别】 {{content['type'] | showType}}</div>
+            </div>
+            <div class="details_status row jc-sb">
+                <div class="details_status_item __time">【文件来源】 {{content['sourceFile']}}</div>
+            </div>
+            <div class="details_content" v-html="content['content']"></div>
+        </div>
+        <div class="details_body" v-else-if="content&&type==='qwhd'" >
+            <div class="details_title">{{content['title']}}</div>
+            <div class="details_status row jc-sb">
+                <div class="details_status_item __time">主办部门：{{content['hostDept'] | showDept}}</div>
+                <div class="details_status_item">活动承办人：{{content['promoter']}}</div>
+                <div class="details_status_item">承办人电话：{{content['phone']  }}</div>
+            </div>
+            <div class="details_content" v-html="content['content']"></div>
+        </div>
+
         <div v-else class="details_error">
             <div>
                 <svg t="1618141650905" class="icon" viewBox="0 0 1024 1024" version="1.1"
@@ -26,8 +54,39 @@
 <script>
     export default {
         name: "detailsList",
+        filters: {
+            showType(a) {
+                switch (a.toString()) {
+                    case "1":
+                        return "国家法律法规"
+                    case "2":
+                        return "地方法律法规"
+                    case "3":
+                        return "司法解释"
+                    case "4":
+                        return "中外条约"
+                    case "5":
+                        return "政策参考"
+                    default:
+                        return "其他"
+                }
+            },
+            showDept(a) {
+                switch (a.toString()) {
+                    case "0":
+                        return "个人"
+                    case "1":
+                        return "企业"
+                    case "2":
+                        return "政府部门"
+                    default:
+                        return "其他"
+                }
+            }
+        },
         data() {
             return {
+                type:'xwzx',
                 nav: [
                     {
                         label: '首页',
@@ -51,7 +110,9 @@
                 label: _this.$route.query.name,
                 url: `/${_this.$route.query.page}`,
             }
-            _this.content = JSON.parse(window.sessionStorage.getItem(_this.$route.query.page))[_this.$route.query.index]
+            _this.type = _this.$route.query.page
+            _this.content = JSON.parse(window.localStorage.getItem(_this.$route.query.page))[_this.$route.query.index]
+
         },
 
 
@@ -60,7 +121,13 @@
 
 <style scoped lang="scss">
     @import "src/assets/theme-color";
-
+.row{
+    display: flex;
+    align-items: center;
+}
+    .jc-sb{
+        justify-content: space-between;
+    }
     .details_init {
         width: 100%;
     }
@@ -99,6 +166,8 @@
         font-size: 20px;
         min-width: 200px;
         margin-bottom: 20px;
+        max-width: 100%;
+
     }
     .__time{
         flex-shrink: 0;

@@ -49,8 +49,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        line-height: 28px;
+        font-size: 30px;
+        line-height: 34px;
         font-weight: bolder;
         top: 0;
         left: 50%;
